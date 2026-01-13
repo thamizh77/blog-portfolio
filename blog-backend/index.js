@@ -1,38 +1,39 @@
-// index.js
-
 const express = require("express");
-const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
-const PORT = 4000;
+
+// 🔥 IMPORTANT: Render gives PORT dynamically
+const PORT = process.env.PORT || 4000;
 
 // -------------------- MIDDLEWARE --------------------
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 // -------------------- MONGODB CONNECTION --------------------
 mongoose
-  .connect("mongodb://localhost:27017/blogDB")
-  .then(() => console.log("MongoDB Connected"))
-  .catch(() =>
-    console.log("MongoDB not connected (starter project – OK)")
-  );
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected ✅"))
+  .catch((err) => console.error("MongoDB Error ❌", err));
 
 // -------------------- SCHEMA & MODEL --------------------
-const blogSchema = new mongoose.Schema({
-  newTitle: String,
-  newContent: String,
-  date: String,
-  likes: Number,
-});
+const blogSchema = new mongoose.Schema(
+  {
+    newTitle: { type: String, required: true },
+    newContent: { type: String, required: true },
+    date: String,
+    likes: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
 
 const Blog = mongoose.model("Blog", blogSchema);
 
 // -------------------- ROUTES --------------------
 
-// Test route
+// Health check
 app.get("/", (req, res) => {
   res.send("Blog Portfolio Backend Running 🚀");
 });
@@ -40,7 +41,7 @@ app.get("/", (req, res) => {
 // Get all blogs
 app.get("/api/blogs", async (req, res) => {
   try {
-    const blogs = await Blog.find({});
+    const blogs = await Blog.find().sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -49,35 +50,39 @@ app.get("/api/blogs", async (req, res) => {
 
 // Add new blog
 app.post("/api/blogs", async (req, res) => {
-  const blog = new Blog({
-    newTitle: req.body.newTitle,
-    newContent: req.body.newContent,
-    date: req.body.date,
-    likes: req.body.likes || 0,
-  });
+  const { newTitle, newContent, date } = req.body;
+
+  if (!newTitle || !newContent) {
+    return res.status(400).json({ message: "Title & Content required" });
+  }
 
   try {
-    const newBlog = await blog.save();
-    res.status(201).json(newBlog);
+    const blog = new Blog({
+      newTitle,
+      newContent,
+      date,
+    });
+
+    const savedBlog = await blog.save();
+    res.status(201).json(savedBlog);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// Like a blog
+// Like blog
 app.patch("/api/blogs/like/:id", async (req, res) => {
   try {
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
+    const blog = await Blog.findById(req.params.id);
 
-    if (!updatedBlog) {
+    if (!blog) {
       return res.status(404).json({ message: "Blog not found" });
     }
 
-    res.json(updatedBlog);
+    blog.likes += 1;
+    await blog.save();
+
+    res.json(blog);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

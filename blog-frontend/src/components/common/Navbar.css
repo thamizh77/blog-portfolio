@@ -1,0 +1,53 @@
+/* NAVBAR CONTAINER */
+.navbar {
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+
+/* BRAND NAME */
+.nav-brand {
+  font-weight: 800;
+  cursor: pointer;
+  color: #111827;
+}
+
+/* NAV LINKS */
+.nav-link {
+  list-style: none;
+  padding: 0 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #f97316;
+}
+
+/* ACTIVE LINK */
+.nav-link.active {
+  color: #f97316;
+  font-weight: 700;
+}
+
+/* BUTTON STYLE (YOUR ORIGINAL – SLIGHTLY POLISHED) */
+.button-style {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(to right, #faa116, #df7320);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.button-style:hover {
+  background: linear-gradient(to right, #ff5f3e, #fb8c4f);
+  box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
